@@ -206,8 +206,10 @@ size_t aircraftCount() { return s_aircraft_count; }
 const Aircraft* aircraftList() { return s_aircraft; }
 
 bool fetchUpdate(double center_lat, double center_lon, float fetch_radius_km) {
-  const float dist_nm = kmToNauticalMiles(fetch_radius_km);
-
+  float dist_nm = kmToNauticalMiles(fetch_radius_km);
+  if (dist_nm > config::kAdsbMaxFetchDistNm) {
+    dist_nm = config::kAdsbMaxFetchDistNm;
+  }
   String url = kApiBase;
   url += String(center_lat, 6);
   url += "/lon/";
@@ -240,8 +242,29 @@ bool fetchUpdate(double center_lat, double center_lon, float fetch_radius_km) {
   }
   http.end();
 
+  // Keep only the fields we actually read so the parse cost stays flat
+  // regardless of how many extra fields adsb.fi includes per aircraft.
+  JsonDocument filter;
+  JsonObject plane_filter = filter["ac"][0].to<JsonObject>();
+  plane_filter["lat"] = true;
+  plane_filter["lon"] = true;
+  plane_filter["true_heading"] = true;
+  plane_filter["mag_heading"] = true;
+  plane_filter["track"] = true;
+  plane_filter["dir"] = true;
+  plane_filter["gs"] = true;
+  plane_filter["tas"] = true;
+  plane_filter["ias"] = true;
+  plane_filter["alt_baro"] = true;
+  plane_filter["alt_geom"] = true;
+  plane_filter["flight"] = true;
+  plane_filter["t"] = true;
+  plane_filter["hex"] = true;
+
+
   JsonDocument doc;
-  const DeserializationError err = deserializeJson(doc, payload);
+  const DeserializationError err = deserializeJson(
+      doc, payload, DeserializationOption::Filter(filter));
   if (err) {
     Serial.printf("adsb: JSON parse error: %s\n", err.c_str());
     return false;

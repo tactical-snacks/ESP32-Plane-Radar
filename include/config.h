@@ -54,6 +54,13 @@ constexpr unsigned long kAdsbFetchIntervalMs = 3000;
 constexpr float kAdsbFetchRadiusScale = 1.0f;
 /** false = hide aircraft with alt_baro "ground"; true = show them too. */
 constexpr bool kAdsbShowGroundAircraft = false;
+/**
+ * Ceiling on the "dist" radius (nm) sent to adsb.fi, regardless of the
+ * screen-scaled radius requested by the active range preset. Without this,
+ * the largest preset over very dense airspace (e.g. near EWR/JFK/LGA) can
+ * return a JSON payload large enough to exhaust heap while parsing.
+ */
+constexpr float kAdsbMaxFetchDistNm = 15.0f;
 
 // --- UI colors (RGB565) — status screens ---
 constexpr uint16_t kColorBlack = 0x0000;
