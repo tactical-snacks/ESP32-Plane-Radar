@@ -63,6 +63,9 @@ void fetchAndDrawAircraft() {
 }  // namespace
 
 void setup() {
+  // Default 160MHz is unneeded for a ~3s poll + occasional SPI blit;
+  // 80MHz (the floor WiFi still runs reliably at) cuts CPU heat directly.
+  setCpuFrequencyMhz(80);
   Serial.begin(115200);
   delay(500);
   Serial.println();

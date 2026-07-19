@@ -260,7 +260,9 @@ void stopLanWebPortal() {
 void prepareSta() {
   WiFi.setTxPower(WIFI_POWER_8_5dBm);
   WiFi.mode(WIFI_STA);
-  WiFi.setSleep(WIFI_PS_NONE);
+  // Modem sleep between the ~3s ADS-B polls cuts radio heat/power; the
+  // occasional extra latency it adds is not user-visible at that cadence.
+  WiFi.setSleep(WIFI_PS_MIN_MODEM);
   WiFi.setAutoReconnect(true);
 }
 
